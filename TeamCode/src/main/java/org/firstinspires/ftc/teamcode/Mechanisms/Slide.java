@@ -5,39 +5,35 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.RobotConfig;
 
+import java.util.PrimitiveIterator;
+
 public class Slide {
-    private DcMotor motorLeft;
-    private DcMotor motorRight;
-    private final int LEFT_POSITION = 5095;
-    private final int RIGHT_POSITION = -5100;
-    private final double SPEED = 0.25;
+    private DcMotor motor;
+    private final int POSITION = -5250;
+    private double SPEED = 0.4;
     private final double EXTEND_PERCENTAGE = 0.5;
     public Slide (HardwareMap hardwareMap) {
-        motorLeft = hardwareMap.get(DcMotor.class, RobotConfig.DC_SLIDE_LEFT);
-        motorRight = hardwareMap.get(DcMotor.class, RobotConfig.DC_SLIDE_RIGHT);
+        motor = hardwareMap.get(DcMotor.class, RobotConfig.DC_SLIDE);
 
-        motorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        motorLeft.setPower(-SPEED);
-        motorRight.setPower(-SPEED);
+        motor.setPower(-SPEED);
 
-        motorLeft.setTargetPosition(0);
-        motorRight.setTargetPosition(0);
+        motor.setTargetPosition(0);
 
-        motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     public void setState(int state) {
         if (state == 2) {
-            motorLeft.setTargetPosition(LEFT_POSITION);
-            motorRight.setTargetPosition(RIGHT_POSITION);
+            motor.setTargetPosition(POSITION);
         } else if (state == 1) {
-            motorLeft.setTargetPosition((int) (LEFT_POSITION * EXTEND_PERCENTAGE));
-            motorRight.setTargetPosition((int) (RIGHT_POSITION * EXTEND_PERCENTAGE));
+            motor.setTargetPosition((int) (POSITION * EXTEND_PERCENTAGE));
         } else {
-            motorLeft.setTargetPosition(0);
-            motorRight.setTargetPosition(0);
+            motor.setTargetPosition(0);
         }
+    }
+    public void setNewPower() {
+        SPEED = 1;
+        motor.setPower(-SPEED);
     }
 }

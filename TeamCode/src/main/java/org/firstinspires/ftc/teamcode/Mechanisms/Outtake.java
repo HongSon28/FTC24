@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.RobotConfig;
 
 public class Outtake {
     private Servo servo;
-    private final double SERVO_POSITION = 0.85;
+    private final double SERVO_POSITION = 1;
     public Outtake (HardwareMap hardwareMap) {
         servo = hardwareMap.get(Servo.class, RobotConfig.SERVO_OUTTAKE);
         servo.setPosition(0);

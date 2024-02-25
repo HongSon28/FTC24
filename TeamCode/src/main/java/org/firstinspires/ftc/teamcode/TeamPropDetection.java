@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.SwitchableLight;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -19,14 +21,14 @@ import org.firstinspires.ftc.teamcode.Drivetrain.MecanumDrivetrain;
 @TeleOp(name = "Team Prop Detection")
 public class TeamPropDetection extends LinearOpMode {
     private MecanumDrive drivetrain;
-    private DistanceSensor sensorDistance;
+    private NormalizedColorSensor colorSensor;
     private IMU imu;
-    private final double STARTING_DISTANCE = 35;
+    private final double STARTING_DISTANCE = 23;
     private double currentHeading;
-    private static final double DETECT_RANGE = 10.0;
+    private static final double DETECT_RANGE = 17.5;
     private final double SCAN_ANGLE = 20;
     private final double MAX_TURNING_SPEED = 0.5;
-    private PIDController turnController;
+    private final float gain = 2;
     @Override
     public void runOpMode() {
         /* initialize IMU */
@@ -35,10 +37,10 @@ public class TeamPropDetection extends LinearOpMode {
         imu.initialize(imuParams);
         imu.resetYaw(); // heading
 
-        sensorDistance = hardwareMap.get(DistanceSensor.class, "sensorDistance");
+        colorSensor = hardwareMap.get(NormalizedColorSensor.class,RobotConfig.SENSOR);
+        colorSensor.setGain(gain);
 
-        turnController = new PIDController(DrivetrainConstants.DRIVE_ROT_PID, -MAX_TURNING_SPEED, MAX_TURNING_SPEED);
-
+        waitForStart();
         /* Run to Spike Mark */
         drivetrain = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
         Vector2d destCord = new Vector2d(
@@ -46,46 +48,24 @@ public class TeamPropDetection extends LinearOpMode {
                 0
         );
         Actions.runBlocking(drivetrain.actionBuilder(drivetrain.pose).strafeToConstantHeading(destCord).build());
-
+        drivetrain.updatePoseEstimate();
         if (!Detected()) {
-            Actions.runBlocking(drivetrain.actionBuilder(drivetrain.pose).turn(-80).build());
-            if (!Scan(-SCAN_ANGLE)) {
-                Actions.runBlocking(drivetrain.actionBuilder(drivetrain.pose).turn(180).build());
-                Scan(SCAN_ANGLE);
+            Actions.runBlocking(drivetrain.actionBuilder(drivetrain.pose).turn(Math.toRadians(40)).build());
+            drivetrain.updatePoseEstimate();
+            if (!Detected()) {
+                Actions.runBlocking(drivetrain.actionBuilder(drivetrain.pose).turn(Math.toRadians(-80)).build());
+                drivetrain.updatePoseEstimate();
             }
         }
         currentHeading = Math.toDegrees(drivetrain.pose.heading.toDouble());
-        telemetry.addData("Detected Heading:","%.3f deg", currentHeading);
+        telemetry.addData("Distance (cm)", "%.3f", ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM)*2);
+        telemetry.addData("Detected Heading:", "%.3f deg", currentHeading);
         telemetry.update();
     }
-    private boolean Scan(double angle) {
-        if (angle < 0) {
-            double rot = turnController.control(1);
-            while (angle ++ < 0) {
-                drivetrain.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                0,0
-                        ),
-                        rot
-                ));
-                if (Detected()) return true;
-            }
-        } else {
-            double rot = turnController.control(-1);
-            while (angle -- > 0) {
-                drivetrain.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                0,0
-                        ),
-                        rot
-                ));
-                if (Detected()) return true;
-            }
-        }
-        return false;
-    }
     private boolean Detected() {
-        double distance = sensorDistance.getDistance(DistanceUnit.INCH);
+        double distance = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM) * 2;
+        telemetry.addData("RANGE = ",distance);
+        telemetry.update();
         return distance <= DETECT_RANGE;
     }
 }

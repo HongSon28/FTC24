@@ -25,6 +25,8 @@ public class RobotConfig {
     public static final String DC_INTAKE = "DCIntake";
 
     /* slide motor names */
-    public static final String DC_SLIDE_LEFT = "slideLeft";
-    public static final String DC_SLIDE_RIGHT = "slideRight";
+    public static final String DC_SLIDE = "DCSlide";
+
+    /* Sensor names */
+    public static final String SENSOR = "colorSensor";
 }

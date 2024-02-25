@@ -33,8 +33,8 @@ public class DriveToAprilTag extends LinearOpMode {
     private AprilTagProcessor aprilTag; // AprilTag detector
 
     private static final int DESIRED_TAG_ID = 1;
-    private static final double DESIRED_DISTANCE = 3; // inch
-    private static final double RR_STOPPING_DISTANCE = 3;
+    private static final double DESIRED_DISTANCE = 5; // inch
+    private static final double RR_STOPPING_DISTANCE = 5;
 
     private static final double DISTANCE_ERR_TOLERANCE = 0.15;
     private static final double HEADING_ERR_TOLERANCE = 0.5;
@@ -100,7 +100,7 @@ public class DriveToAprilTag extends LinearOpMode {
                 telemetry.addData("Dest. Y", destCoord.y);
                 telemetry.addData("Dest. hdg", Math.toDegrees(destHeading));
             } else telemetry.addData(">", "Drive robot around to pick up a tag");
-            if(detectedTag != null && detectedTag.ftcPose.range > Math.min(DESIRED_DISTANCE, RR_STOPPING_DISTANCE)) {
+            if(gamepad1.right_bumper && detectedTag != null && detectedTag.ftcPose.range > Math.min(DESIRED_DISTANCE, RR_STOPPING_DISTANCE)) {
                 if(detectedTag.ftcPose.range > RR_STOPPING_DISTANCE) Actions.runBlocking(drivetrain.actionBuilder(drivetrain.pose).splineTo(destCoord, destHeading).build());
 
                 /* Detect Tag again */
@@ -116,6 +116,8 @@ public class DriveToAprilTag extends LinearOpMode {
                     telemetry.addData(">","Track Tag again");
                     if (gamepad1.right_bumper && detectedTag != null) trackTag(detectedTag);
                 }
+
+                slide.setState(2);
             }
 
             /* normal driving */
@@ -128,8 +130,6 @@ public class DriveToAprilTag extends LinearOpMode {
             ));
 
             drivetrain.updatePoseEstimate();
-
-            slide.setState(1);
 
             telemetry.addData("x", drivetrain.pose.position.x);
             telemetry.addData("y", drivetrain.pose.position.y);
